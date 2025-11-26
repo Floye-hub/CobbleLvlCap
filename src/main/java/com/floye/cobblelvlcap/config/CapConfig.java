@@ -19,46 +19,51 @@ public final class CapConfig {
 
     public static class CapModel {
         public int defaultCap = 100;
+        public String defaultCap_comment = "Base level cap used when the player has no cap tags.";
+
         // Mapping tag -> cap
         public Map<String, Integer> byTag = Map.of(
                 "cap_20", 20,
                 "cap_30", 30
         );
+        public String byTag_comment = "Map of player command tags to their level caps. Example: using '/tag <player> add cap_20' gives them a cap of 20.";
 
-        // XP issue d'une commande bypass le cap
+        // XP from commands can bypass cap
         public boolean allowCommandBypass = true;
+        public String allowCommandBypass_comment = "If true, all actions performed while running commands ignore level caps (XP, capture, moves, trades).";
 
-        // Limiter l'XP (PokemonAddExperienceMixin)
+        // Limit XP gain when Pokémon reaches cap
         public boolean enableExperienceCap = true;
+        public String enableExperienceCap_comment = "If true, party Pokémon stop gaining XP once they reach the level cap (based on tags/defaultCap).";
 
-        // Anciennes options de clamp (gardées pour compat, mais plus utilisées)
-        public boolean enableCaptureClampParty = true;
-        public boolean enableCaptureClampPc = true;
-
-        // Bloquer/valider les échanges suivant le cap
+        // Block trades if received Pokémon is above the receiver's cap
         public boolean enableTradeCap = true;
+        public String enableTradeCap_comment = "If true, trades are cancelled if the Pokémon received is above the receiver's tag-based level cap.";
 
         /**
-         * Si true, une capture d'un Pokémon au-dessus du cap est purement annulée.
-         * -> le Pokémon n'est pas ajouté à la party ni au PC.
+         * If true, any capture of a Pokémon above the capture cap is fully denied.
+         * The Pokémon will not be added to the party or the PC.
          */
         public boolean denyCaptureAboveCap = false;
+        public String denyCaptureAboveCap_comment = "If true, captures above the capture cap are completely denied (Pokémon is not stored anywhere).";
 
         /**
-         * Si true, un déplacement PC -> équipe d'un Pokémon au-dessus du cap est interdit :
-         * -> le handler serveur annule le move, le Pokémon reste dans le PC.
+         * If true, moving a Pokémon from PC -> party is forbidden when it is above
+         * the player's tag-based cap. The Pokémon stays in the PC.
          */
         public boolean denyPcToPartyAboveCap = true;
+        public String denyPcToPartyAboveCap_comment = "If true, you cannot move PC Pokémon above your tag-based cap into your party.";
 
         /**
-         * Si true, pour les captures on utilise le niveau le plus élevé de l'équipe
-         * comme cap, au lieu du cap basé sur les tags.
+         * If true, the capture cap uses the highest level in the current party instead
+         * of the tag-based cap.
          *
-         * - false : capture utilise LevelCapService (tags + defaultCap).
-         * - true  : capture utilise max(levels de la party). Si l'équipe est vide,
-         *           on considère qu'il n'y a pas de limite (cap très élevé).
+         * - false : capture cap uses tags + defaultCap (LevelCapService).
+         * - true  : capture cap uses the highest level in the party.
+         *           If the party is empty, there is effectively no capture limit.
          */
         public boolean usePartyHighestAsCaptureCap = false;
+        public String usePartyHighestAsCaptureCap_comment = "If true, your highest party level becomes your capture cap instead of using tags/defaultCap.";
     }
 
     public static void load() {

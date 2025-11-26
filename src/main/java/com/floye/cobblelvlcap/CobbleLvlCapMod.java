@@ -1,11 +1,9 @@
 package com.floye.cobblelvlcap;
 
-import com.cobblemon.mod.common.api.Priority;
-import com.cobblemon.mod.common.api.events.CobblemonEvents;
-import com.cobblemon.mod.common.api.events.pokemon.PokemonGainedEvent;
+import com.cobblemon.mod.common.Cobblemon;
+import com.cobblemon.mod.common.api.storage.party.PartyStore;
+import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.floye.cobblelvlcap.config.CapConfig;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -22,7 +20,6 @@ public class CobbleLvlCapMod implements ModInitializer {
         CapConfig.load();
         OwnerTracker.start();
 
-        // Commandes
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(
                     CommandManager.literal("cobblelvlcap")
@@ -38,7 +35,7 @@ public class CobbleLvlCapMod implements ModInitializer {
                                         try {
                                             self = src.getPlayer();
                                         } catch (Exception e) {
-                                            src.sendFeedback(() -> Text.literal("[CobbleLvlCap] Cette commande doit être exécutée par un joueur."), false);
+                                            src.sendFeedback(() -> Text.literal("[CobbleLvlCap] This command must be executed by a player."), false);
                                             return 0;
                                         }
                                         sendInfo(src, self);
@@ -55,49 +52,39 @@ public class CobbleLvlCapMod implements ModInitializer {
                             )
             );
         });
+    }
 
-        // Abonnement propre à l'événement POKEMON_GAINED (Kotlin Function1) avec priorité NORMAL
-        CobblemonEvents.POKEMON_GAINED.subscribe(
-                Priority.NORMAL,
-                new Function1<PokemonGainedEvent, Unit>() {
-                    @Override
-                    public Unit invoke(PokemonGainedEvent event) {
-                        CaptureHandler.onPokemonGained(event);
-                        return Unit.INSTANCE;
-                    }
+    /** Capture cap, matching the capture mixin logic. */
+    private static int getCaptureCap(ServerPlayerEntity player) {
+        CapConfig.CapModel cfg = CapConfig.CFG;
+        if (cfg.usePartyHighestAsCaptureCap) {
+            PartyStore party = Cobblemon.INSTANCE.getStorage().getParty(player);
+            int max = 0;
+            int size;
+            try {
+                size = party.size();
+            } catch (Throwable t) {
+                size = 6;
+            }
+            for (int i = 0; i < size; i++) {
+                Pokemon p = party.get(i);
+                if (p != null && p.getLevel() > max) {
+                    max = p.getLevel();
                 }
-        );
+            }
+            return (max <= 0) ? Integer.MAX_VALUE : max;
+        } else {
+            return LevelCapService.getCapFor(player);
+        }
     }
 
     private static void sendInfo(ServerCommandSource src, ServerPlayerEntity target) {
-        int cap = LevelCapService.getCapFor(target);
-        CapConfig.CapModel cfg = CapConfig.CFG;
+        int capCapture = getCaptureCap(target);
+        String capText = (capCapture == Integer.MAX_VALUE) ? "no limit" : String.valueOf(capCapture);
 
-        src.sendFeedback(() -> Text.literal("[CobbleLvlCap] Info pour " + target.getName().getString() + ":"), false);
-        src.sendFeedback(() -> Text.literal("  Cap actuel (par tags) : " + cap), false);
-        src.sendFeedback(() -> Text.literal("  Cap par défaut : " + cfg.defaultCap), false);
-
-        var tags = target.getCommandTags();
-        if (tags.isEmpty()) {
-            src.sendFeedback(() -> Text.literal("  Tags : aucun"), false);
-        } else {
-            src.sendFeedback(() -> Text.literal("  Tags :"), false);
-            for (String tag : tags) {
-                Integer tCap = cfg.byTag.get(tag);
-                if (tCap != null) {
-                    src.sendFeedback(() -> Text.literal("    " + tag + " -> " + tCap), false);
-                } else {
-                    src.sendFeedback(() -> Text.literal("    " + tag + " (pas de cap configuré)"), false);
-                }
-            }
-        }
-
-        src.sendFeedback(() -> Text.literal("  Options :"), false);
-        src.sendFeedback(() -> Text.literal("    XP cap : " + cfg.enableExperienceCap), false);
-        src.sendFeedback(() -> Text.literal("    Capture: denyCaptureAboveCap : " + cfg.denyCaptureAboveCap), false);
-        src.sendFeedback(() -> Text.literal("    Capture: usePartyHighestAsCaptureCap : " + cfg.usePartyHighestAsCaptureCap), false);
-        src.sendFeedback(() -> Text.literal("    PC -> équipe: denyPcToPartyAboveCap : " + cfg.denyPcToPartyAboveCap), false);
-        src.sendFeedback(() -> Text.literal("    Trade cap : " + cfg.enableTradeCap), false);
-        src.sendFeedback(() -> Text.literal("    Bypass commandes : " + cfg.allowCommandBypass), false);
+        src.sendFeedback(
+                () -> Text.literal("[CobbleLvlCap] Max capture level for " + target.getName().getString() + ": " + capText),
+                false
+        );
     }
 }
