@@ -6,6 +6,7 @@ import com.cobblemon.mod.common.api.storage.pc.link.PCLinkManager;
 import com.cobblemon.mod.common.net.messages.server.storage.pc.MovePCPokemonToPartyPacket;
 import com.cobblemon.mod.common.net.serverhandling.storage.pc.MovePCPokemonToPartyHandler;
 import com.cobblemon.mod.common.pokemon.Pokemon;
+import com.floye.cobblelvlcap.Bypass;
 import com.floye.cobblelvlcap.CommandContext;
 import com.floye.cobblelvlcap.LevelCapService;
 import com.floye.cobblelvlcap.config.CapConfig;
@@ -31,6 +32,9 @@ public abstract class MovePCPokemonToPartyHandlerMixin {
     )
     private void cobblelvlcap$blockOverCap(MovePCPokemonToPartyPacket packet, MinecraftServer server, ServerPlayerEntity player, CallbackInfo ci) {
         if (CommandContext.inCommand()) return;
+        // BYPASS OP / NON-SURVIVAL
+        if (Bypass.shouldBypass(player)) return;
+
         if (!CapConfig.CFG.denyPcToPartyAboveCap) return;
 
         PCStore pc = PCLinkManager.INSTANCE.getPC(player);

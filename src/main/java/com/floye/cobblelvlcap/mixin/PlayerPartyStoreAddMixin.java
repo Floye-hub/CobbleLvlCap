@@ -5,6 +5,7 @@ import com.cobblemon.mod.common.api.storage.party.PartyStore;
 import com.cobblemon.mod.common.api.storage.pc.PCStore;
 import com.cobblemon.mod.common.pokemon.OriginalTrainerType;
 import com.cobblemon.mod.common.pokemon.Pokemon;
+import com.floye.cobblelvlcap.Bypass;
 import com.floye.cobblelvlcap.CommandContext;
 import com.floye.cobblelvlcap.LevelCapService;
 import com.floye.cobblelvlcap.OwnerTracker;
@@ -46,6 +47,9 @@ public abstract class PlayerPartyStoreAddMixin {
         UUID playerUUID = self.getPlayerUUID();
         ServerPlayerEntity player = OwnerTracker.getPlayer(playerUUID);
         if (player == null) return;
+
+        // BYPASS OP / NON-SURVIVAL
+        if (Bypass.shouldBypass(player)) return;
 
         int cap = getCaptureCap(player, self, cfg);
         int level = pokemon.getLevel();

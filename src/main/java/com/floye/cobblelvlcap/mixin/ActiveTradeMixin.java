@@ -4,6 +4,7 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.trade.ActiveTrade;
 import com.cobblemon.mod.common.trade.TradeOffer;
 import com.cobblemon.mod.common.trade.TradeParticipant;
+import com.floye.cobblelvlcap.Bypass;
 import com.floye.cobblelvlcap.LevelCapService;
 import com.floye.cobblelvlcap.OwnerTracker;
 import com.floye.cobblelvlcap.config.CapConfig;
@@ -30,6 +31,8 @@ public abstract class ActiveTradeMixin {
         if (offered == null) return;
 
         ServerPlayerEntity receiver = OwnerTracker.getPlayer(tradeParticipant.getUuid());
+        if (Bypass.shouldBypass(receiver)) return; // BYPASS OP / NON-SURVIVAL
+
         int cap = LevelCapService.getCapFor(receiver);
 
         if (offered.getLevel() > cap && receiver != null) {
@@ -54,7 +57,7 @@ public abstract class ActiveTradeMixin {
         ServerPlayerEntity player1 = OwnerTracker.getPlayer(self.getPlayer1().getUuid());
         ServerPlayerEntity player2 = OwnerTracker.getPlayer(self.getPlayer2().getUuid());
 
-        if (p1 != null && player2 != null) {
+        if (p1 != null && player2 != null && !Bypass.shouldBypass(player2)) {
             int cap2 = LevelCapService.getCapFor(player2);
             if (p1.getLevel() > cap2) {
                 player2.sendMessage(
@@ -67,7 +70,7 @@ public abstract class ActiveTradeMixin {
             }
         }
 
-        if (p2 != null && player1 != null) {
+        if (p2 != null && player1 != null && !Bypass.shouldBypass(player1)) {
             int cap1 = LevelCapService.getCapFor(player1);
             if (p2.getLevel() > cap1) {
                 player1.sendMessage(

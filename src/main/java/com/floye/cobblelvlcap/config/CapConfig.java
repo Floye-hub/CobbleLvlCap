@@ -32,13 +32,17 @@ public final class CapConfig {
         public boolean allowCommandBypass = true;
         public String allowCommandBypass_comment = "If true, all actions performed while running commands ignore level caps (XP, capture, moves, trades).";
 
-        // Limit XP gain when Pokémon reaches cap
+        // XP gain limit
         public boolean enableExperienceCap = true;
         public String enableExperienceCap_comment = "If true, party Pokémon stop gaining XP once they reach the level cap (based on tags/defaultCap).";
 
-        // Block trades if received Pokémon is above the receiver's cap
+        // Trade restriction
         public boolean enableTradeCap = true;
         public String enableTradeCap_comment = "If true, trades are cancelled if the Pokémon received is above the receiver's tag-based level cap.";
+
+        /** NEW: bypass for OPs / non-survival */
+        public boolean allowOpGamemodeBypass = true;
+        public String allowOpGamemodeBypass_comment = "If true, operators (permission level >= 2) and players not in survival mode are not affected by level caps.";
 
         /**
          * If true, any capture of a Pokémon above the capture cap is fully denied.
@@ -57,10 +61,6 @@ public final class CapConfig {
         /**
          * If true, the capture cap uses the highest level in the current party instead
          * of the tag-based cap.
-         *
-         * - false : capture cap uses tags + defaultCap (LevelCapService).
-         * - true  : capture cap uses the highest level in the party.
-         *           If the party is empty, there is effectively no capture limit.
          */
         public boolean usePartyHighestAsCaptureCap = false;
         public String usePartyHighestAsCaptureCap_comment = "If true, your highest party level becomes your capture cap instead of using tags/defaultCap.";
