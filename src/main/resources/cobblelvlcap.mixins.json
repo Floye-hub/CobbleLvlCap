@@ -7,8 +7,8 @@
 		"PokemonAddExperienceMixin",
 		"CommandManagerMixin",
 		"ActiveTradeMixin",
-		"PlayerPartyStoreAddMixin",
-		"PlayerPCStoreAddMixin"
+		"PlayerPCStoreAddMixin",
+		"MovePCPokemonToPartyHandlerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

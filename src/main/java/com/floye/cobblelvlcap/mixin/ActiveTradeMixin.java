@@ -6,6 +6,7 @@ import com.cobblemon.mod.common.trade.TradeOffer;
 import com.cobblemon.mod.common.trade.TradeParticipant;
 import com.floye.cobblelvlcap.LevelCapService;
 import com.floye.cobblelvlcap.OwnerTracker;
+import com.floye.cobblelvlcap.config.CapConfig;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,12 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = ActiveTrade.class, remap = false)
 public abstract class ActiveTradeMixin {
 
-// Intercepte la tentative d’acceptation (bouton "Prêt")
+    // Intercepte la tentative d’acceptation (bouton "Prêt")
     @Inject(method = "updateAcceptance", at = @At("HEAD"), cancellable = true)
     private void cobblelvlcap$blockAcceptanceIfOverCap(TradeParticipant tradeParticipant, boolean acceptance, CallbackInfo ci) {
+        if (!CapConfig.CFG.enableTradeCap) return;
         if (!acceptance) return; // on ne bloque que lorsqu’on tente d’accepter
 
-        ActiveTrade self = (ActiveTrade)(Object)this;
+        ActiveTrade self = (ActiveTrade) (Object) this;
 
         // Le joueur "tradeParticipant" accepte l’offre de l’autre -> on récupère le Pokémon offert par l’autre
         TradeOffer opposingOffer = self.getOpposingOffer(tradeParticipant);
@@ -44,14 +46,14 @@ public abstract class ActiveTradeMixin {
     // Double garde: juste avant l’échange effectif
     @Inject(method = "performTrade", at = @At("HEAD"), cancellable = true)
     private void cobblelvlcap$checkBeforePerform(TradeParticipant tradeParticipant, CallbackInfo ci) {
-        ActiveTrade self = (ActiveTrade)(Object)this;
+        if (!CapConfig.CFG.enableTradeCap) return;
 
-        // Récupère les 2 offres
+        ActiveTrade self = (ActiveTrade) (Object) this;
+
+        // Récupère les 2 offres (variables non utilisées, conservées si besoin de debug)
         TradeOffer offer1 = self.getOffer(self.getOppositePlayer(self.getOppositePlayer(tradeParticipant))); // player1Offer
         TradeOffer offer2 = self.getOpposingOffer(self.getOppositePlayer(self.getOppositePlayer(tradeParticipant))); // player2Offer
 
-        // Selon la structure, plus fiable: appel direct aux champs par getters Kotlin générés
-        // On va plutôt appeler les getters dédiés:
         Pokemon p1 = self.getPlayer1Offer().getPokemon();
         Pokemon p2 = self.getPlayer2Offer().getPokemon();
 

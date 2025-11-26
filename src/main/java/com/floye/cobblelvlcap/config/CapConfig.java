@@ -19,13 +19,46 @@ public final class CapConfig {
 
     public static class CapModel {
         public int defaultCap = 100;
-        // Mapping tag -> cap. Ex: "cap_20": 20, "badge_1": 25, etc.
+        // Mapping tag -> cap
         public Map<String, Integer> byTag = Map.of(
                 "cap_20", 20,
                 "cap_30", 30
         );
+
         // XP issue d'une commande bypass le cap
         public boolean allowCommandBypass = true;
+
+        // Limiter l'XP (PokemonAddExperienceMixin)
+        public boolean enableExperienceCap = true;
+
+        // Anciennes options de clamp (gardées pour compat, mais plus utilisées)
+        public boolean enableCaptureClampParty = true;
+        public boolean enableCaptureClampPc = true;
+
+        // Bloquer/valider les échanges suivant le cap
+        public boolean enableTradeCap = true;
+
+        /**
+         * Si true, une capture d'un Pokémon au-dessus du cap est purement annulée.
+         * -> le Pokémon n'est pas ajouté à la party ni au PC.
+         */
+        public boolean denyCaptureAboveCap = false;
+
+        /**
+         * Si true, un déplacement PC -> équipe d'un Pokémon au-dessus du cap est interdit :
+         * -> le handler serveur annule le move, le Pokémon reste dans le PC.
+         */
+        public boolean denyPcToPartyAboveCap = true;
+
+        /**
+         * Si true, pour les captures on utilise le niveau le plus élevé de l'équipe
+         * comme cap, au lieu du cap basé sur les tags.
+         *
+         * - false : capture utilise LevelCapService (tags + defaultCap).
+         * - true  : capture utilise max(levels de la party). Si l'équipe est vide,
+         *           on considère qu'il n'y a pas de limite (cap très élevé).
+         */
+        public boolean usePartyHighestAsCaptureCap = false;
     }
 
     public static void load() {
